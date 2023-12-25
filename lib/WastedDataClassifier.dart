@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 
 class WastedDataClassifier extends StatefulWidget {
-  const WastedDataClassifier({super.key});
+  const WastedDataClassifier({Key? key}) : super(key: key);
 
   @override
   State<WastedDataClassifier> createState() => _WastedDataClassifierState();
@@ -34,11 +34,10 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
 
   loadModel() async {
     Tflite.close();
-    String res;
-    res = (await Tflite.loadModel(
-      model: "assets/wasted_data_class.tflite",
-    ))!;
-    print("Models loading status: $res");
+    String? res = await Tflite.loadModel(
+      model: "assets/wasted_data_model.tflite",
+    );
+    print("Model loading status: $res");
   }
 
   runModel(File image) async {
@@ -50,13 +49,11 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
       imageStd: 127.5,
     );
 
-    if (recognitions != null && recognitions.isNotEmpty) {
-      setState(() {
-        prediction = recognitions;
-        pickedImage = image;
-        selectedImage = true;
-      });
-    }
+    setState(() {
+      prediction = recognitions!;
+      pickedImage = image;
+      selectedImage = true;
+    });
   }
 
   @override
@@ -100,7 +97,7 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 child: ListTile(
                   title: Text(
-                    'Result: ${prediction[0]['confidence'] > 0.5 ? 'This is recyclable' : 'This is organic'}',
+                    'Result: ${getWasteType()}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -112,6 +109,11 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
         ),
       ),
     );
+  }
+
+  String getWasteType() {
+    double confidence = prediction[0]['confidence'];
+    return confidence > 0.5 ? 'Recyclable' : 'Organic';
   }
 }
 

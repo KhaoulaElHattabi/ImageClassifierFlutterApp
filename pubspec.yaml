@@ -62,6 +62,7 @@ flutter:
     - assets/ai.jpg
     - assets/labels.txt
     - assets/robot.svg
+    - assets/wasted_data_model.tflite
 
 
 
