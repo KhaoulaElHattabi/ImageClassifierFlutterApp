@@ -3,6 +3,8 @@
 import 'package:dl/ImageClassificationPage.dart';
 import 'package:flutter/material.dart';
 
+import 'WastedDataClassifier.dart';
+
 class Menu extends StatelessWidget {
   const Menu({super.key});
 
@@ -19,7 +21,7 @@ class Menu extends StatelessWidget {
           Column(
             children: [
               ListTile(
-                title: const Text('Choose an algorithm above'),
+                title: const Text('Choose an algorithm'),
                 leading: const Icon(Icons.data_array),
               ),
               ListTile(

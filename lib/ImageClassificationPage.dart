@@ -1,16 +1,19 @@
+
+
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 
-class WastedDataClassifier extends StatefulWidget {
-  const WastedDataClassifier({Key? key}) : super(key: key);
+class ImageClassificationPage extends StatefulWidget {
+  const ImageClassificationPage({super.key});
 
   @override
-  _WastedDataClassifierState createState() => _WastedDataClassifierState();
+  State<ImageClassificationPage> createState() => _ImageClassifierPageState();
 }
 
-class _WastedDataClassifierState extends State<WastedDataClassifier> {
+class _ImageClassifierPageState extends State<ImageClassificationPage> {
   late File pickedImage;
   late List prediction;
   bool selectedImage = false;
@@ -36,7 +39,8 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
     Tflite.close();
     String res;
     res = (await Tflite.loadModel(
-      model: "assets/wasted_data_class.tflite",
+      model: "assets/mobilenet_v1_1.0_224.tflite",
+      labels: "assets/labels.txt",
     ))!;
     print("Models loading status: $res");
   }
@@ -44,36 +48,33 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
   runModel(File image) async {
     final List? recognitions = await Tflite.runModelOnImage(
       path: image.path,
-      numResults: 1,
-      threshold: 0.5, // Adjust the threshold as needed
+      numResults: 6,
+      threshold: 0.05,
       imageMean: 127.5,
       imageStd: 127.5,
     );
-
-    if (recognitions != null && recognitions.isNotEmpty) {
-      setState(() {
-        prediction = recognitions;
-        pickedImage = image;
-        selectedImage = true;
-      });
-    }
+    setState(() {
+      prediction = recognitions!;
+      pickedImage = image;
+      selectedImage = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Waste Classification'),
+        title: Text('Image Classification'),
       ),
-      body: Padding(
+      body:
+      Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: pickImage,
-              child: const Text(
-                'Pick an Image',
+              child: const Text('Pick an Image',
                 style: TextStyle(fontSize: 18),
               ),
             ),
@@ -93,14 +94,14 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
                 ),
               ),
             const SizedBox(height: 20),
-            // Display the classification result
+            // Display the classification results
             if (selectedImage && prediction.isNotEmpty)
               Card(
                 elevation: 2,
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 child: ListTile(
                   title: Text(
-                    'Result: ${prediction[0]['confidence'] > 0.5 ? 'Recyclable (R)' : 'Organic (O)'}',
+                    'Result : This is a ${prediction[0]['label']}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -117,6 +118,6 @@ class _WastedDataClassifierState extends State<WastedDataClassifier> {
 
 void main() {
   runApp(MaterialApp(
-    home: WastedDataClassifier(),
+    home: ImageClassificationPage(),
   ));
 }
